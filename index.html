@@ -291,7 +291,24 @@ body {
   </style>
 </head>
 <body>
-  <div id="view-list"></div>
+  <div id="view-list">
+    <div class="app-container">
+      <div class="app-header">🥛 悠遊卡換鮮乳條碼產生器</div>
+      <div id="storage-warning" class="storage-warning">
+        ⚠️ 此瀏覽器不支援本機儲存，資料將在關閉頁面後消失。
+      </div>
+      <div id="profiles-container"></div>
+      <button class="btn-add" id="btn-add-profile">＋ 新增孩子</button>
+    </div>
+  </div>
+
+  <!-- Context Menu -->
+  <div class="context-overlay" id="context-overlay"></div>
+  <div class="context-menu" id="context-menu">
+    <div class="context-menu-item" id="ctx-edit">✏️ 編輯</div>
+    <div class="context-menu-item danger" id="ctx-delete">🗑 刪除</div>
+  </div>
+
   <div id="view-form" style="display:none"></div>
   <div id="view-barcode" style="display:none"></div>
 
@@ -379,6 +396,109 @@ body {
 
       return { show };
     })();
+
+    // ===== PROFILE LIST =====
+    const ProfileList = (() => {
+      let contextTargetId = null;
+      let longPressTimer = null;
+
+      function render() {
+        const profiles = Storage.getAll();
+        const container = document.getElementById('profiles-container');
+
+        if (!Storage.isAvailable()) {
+          document.getElementById('storage-warning').classList.add('visible');
+        }
+
+        if (profiles.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <p>還沒有儲存任何孩子的資料</p>
+              <p>點下方按鈕新增第一筆</p>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = profiles.map(p => `
+          <div class="profile-card" data-id="${p.id}">
+            <div class="profile-info">
+              <div class="profile-name">${escapeHtml(p.name)}</div>
+              <div class="profile-type">${p.type === 'general' ? '一般悠遊卡' : '兒童優惠卡（愛心卡）'}</div>
+            </div>
+            <button class="btn-barcode" data-id="${p.id}">顯示條碼</button>
+          </div>`).join('');
+
+        // Barcode buttons
+        container.querySelectorAll('.btn-barcode').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const profile = Storage.getAll().find(p => p.id === btn.dataset.id);
+            if (profile) BarcodeView.show(profile);
+          });
+        });
+
+        // Long press for edit/delete
+        container.querySelectorAll('.profile-card').forEach(card => {
+          card.addEventListener('pointerdown', () => {
+            longPressTimer = setTimeout(() => showContextMenu(card.dataset.id, card), 600);
+          });
+          card.addEventListener('pointerup', () => clearTimeout(longPressTimer));
+          card.addEventListener('pointercancel', () => clearTimeout(longPressTimer));
+          card.addEventListener('pointermove', () => clearTimeout(longPressTimer));
+        });
+      }
+
+      function showContextMenu(id, card) {
+        contextTargetId = id;
+        const menu = document.getElementById('context-menu');
+        const overlay = document.getElementById('context-overlay');
+        const rect = card.getBoundingClientRect();
+        menu.style.top = `${rect.bottom + 4}px`;
+        menu.style.left = `${rect.left}px`;
+        menu.classList.add('visible');
+        overlay.classList.add('visible');
+      }
+
+      function hideContextMenu() {
+        document.getElementById('context-menu').classList.remove('visible');
+        document.getElementById('context-overlay').classList.remove('visible');
+        contextTargetId = null;
+      }
+
+      function init() {
+        document.getElementById('btn-add-profile').addEventListener('click', () => {
+          ProfileForm.open(null);
+        });
+
+        document.getElementById('context-overlay').addEventListener('click', hideContextMenu);
+
+        document.getElementById('ctx-edit').addEventListener('click', () => {
+          const profile = Storage.getAll().find(p => p.id === contextTargetId);
+          hideContextMenu();
+          if (profile) ProfileForm.open(profile);
+        });
+
+        document.getElementById('ctx-delete').addEventListener('click', () => {
+          if (contextTargetId && confirm('確定要刪除這筆資料？')) {
+            Storage.remove(contextTargetId);
+            hideContextMenu();
+            render();
+          }
+        });
+      }
+
+      return { render, init };
+    })();
+
+    // Helper
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ===== INIT =====
+    ProfileList.init();
+    Router.show('list');
+    ProfileList.render();
   </script>
 </body>
 </html>
