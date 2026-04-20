@@ -420,12 +420,12 @@ body {
         }
 
         container.innerHTML = profiles.map(p => `
-          <div class="profile-card" data-id="${p.id}">
+          <div class="profile-card" data-id="${escapeHtml(p.id)}">
             <div class="profile-info">
               <div class="profile-name">${escapeHtml(p.name)}</div>
               <div class="profile-type">${p.type === 'general' ? '一般悠遊卡' : '兒童優惠卡（愛心卡）'}</div>
             </div>
-            <button class="btn-barcode" data-id="${p.id}">顯示條碼</button>
+            <button class="btn-barcode" data-id="${escapeHtml(p.id)}">顯示條碼</button>
           </div>`).join('');
 
         // Barcode buttons
@@ -440,6 +440,7 @@ body {
         // Long press for edit/delete
         container.querySelectorAll('.profile-card').forEach(card => {
           card.addEventListener('pointerdown', () => {
+            clearTimeout(longPressTimer);
             longPressTimer = setTimeout(() => showContextMenu(card.dataset.id, card), 600);
           });
           card.addEventListener('pointerup', () => clearTimeout(longPressTimer));
