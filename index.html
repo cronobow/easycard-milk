@@ -349,6 +349,23 @@ body {
 
       return { isAvailable, getAll, add, update, remove, createProfile };
     })();
+
+    // ===== ROUTER =====
+    const Router = (() => {
+      const views = {
+        list: document.getElementById('view-list'),
+        form: document.getElementById('view-form'),
+        barcode: document.getElementById('view-barcode')
+      };
+
+      function show(name) {
+        Object.entries(views).forEach(([key, el]) => {
+          el.style.display = key === name ? 'block' : 'none';
+        });
+      }
+
+      return { show };
+    })();
   </script>
 </body>
 </html>
