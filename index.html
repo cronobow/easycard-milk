@@ -6,8 +6,288 @@
   <title>悠遊卡換鮮乳條碼產生器</title>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/barcodes/JsBarcode.code128.min.js"></script>
   <style>
-    /* placeholder — 下一個 task 填入 */
-    body { margin: 0; font-family: sans-serif; }
+/* === Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f4ff;
+  min-height: 100vh;
+  color: #1a1a2e;
+}
+
+/* === Layout === */
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
+}
+
+/* === Header === */
+.app-header {
+  background: #1a56db;
+  color: white;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* === Card List === */
+.profile-card {
+  background: white;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+  user-select: none;
+}
+.profile-card .profile-info .profile-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+.profile-card .profile-info .profile-type {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+.btn-barcode {
+  background: #1a56db;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-barcode:active { background: #1344b0; }
+
+/* === Add Button === */
+.btn-add {
+  width: 100%;
+  border: 2px dashed #aac0f0;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  color: #1a56db;
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  margin-top: 4px;
+}
+.btn-add:active { background: #e8eeff; }
+
+/* === Empty State === */
+.empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  color: #888;
+}
+.empty-state p { margin-bottom: 8px; font-size: 14px; }
+
+/* === Form === */
+.form-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #1a56db;
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+.form-title { font-size: 15px; font-weight: bold; margin-bottom: 16px; }
+.field-group { margin-bottom: 14px; }
+.field-label {
+  font-size: 11px;
+  color: #555;
+  margin-bottom: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.field-input {
+  width: 100%;
+  border: 1.5px solid #d0d9f0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s;
+}
+.field-input:focus { border-color: #1a56db; }
+.field-input.error { border-color: #e53e3e; }
+.field-error { font-size: 11px; color: #e53e3e; margin-top: 3px; display: none; }
+.field-error.visible { display: block; }
+.field-hint { font-size: 10px; color: #888; margin-top: 3px; }
+
+/* === Card Type Toggle === */
+.type-toggle { display: flex; gap: 8px; }
+.type-btn {
+  flex: 1;
+  border: 1.5px solid #d0d9f0;
+  border-radius: 8px;
+  padding: 9px;
+  text-align: center;
+  font-size: 12px;
+  cursor: pointer;
+  background: white;
+  color: #555;
+  transition: all .2s;
+}
+.type-btn.active {
+  background: #1a56db;
+  color: white;
+  border-color: #1a56db;
+  font-weight: 600;
+}
+
+/* === Love Card Hint === */
+.love-card-hint {
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: #92400e;
+  margin-bottom: 14px;
+  display: none;
+}
+.love-card-hint.visible { display: block; }
+.love-card-hint a { color: #b45309; font-weight: 600; }
+
+/* === How-To Expand === */
+.howto-toggle {
+  font-size: 11px;
+  color: #1a56db;
+  cursor: pointer;
+  margin-bottom: 14px;
+  text-decoration: underline;
+}
+.howto-content {
+  background: #eef2ff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: #374151;
+  margin-bottom: 14px;
+  display: none;
+  line-height: 1.6;
+}
+.howto-content.visible { display: block; }
+
+/* === Submit Button === */
+.btn-submit {
+  width: 100%;
+  background: #1a56db;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 4px;
+}
+.btn-submit:active { background: #1344b0; }
+
+/* === Barcode View === */
+.barcode-back {
+  font-size: 13px;
+  color: #1a56db;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+.barcode-name {
+  font-size: 22px;
+  font-weight: bold;
+  color: #1a56db;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.barcode-type-label {
+  text-align: center;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 20px;
+}
+.barcode-wrap {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+  text-align: center;
+}
+.barcode-wrap svg { width: 100%; height: auto; }
+.barcode-number {
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #444;
+  margin-top: 8px;
+}
+.barcode-fallback {
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #92400e;
+  margin-bottom: 12px;
+}
+.barcode-fallback .fallback-title { font-weight: bold; margin-bottom: 6px; }
+.barcode-fallback .fallback-row { margin-bottom: 3px; }
+.barcode-screenshot-hint {
+  text-align: center;
+  font-size: 10px;
+  color: #aaa;
+  margin-top: 8px;
+}
+
+/* === Context Menu (long press) === */
+.context-menu {
+  position: fixed;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+  overflow: hidden;
+  z-index: 100;
+  min-width: 140px;
+  display: none;
+}
+.context-menu.visible { display: block; }
+.context-menu-item {
+  padding: 12px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.context-menu-item:hover { background: #f5f5f5; }
+.context-menu-item.danger { color: #e53e3e; }
+.context-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  display: none;
+}
+.context-overlay.visible { display: block; }
+
+/* === LocalStorage Warning === */
+.storage-warning {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: #991b1b;
+  margin-bottom: 14px;
+  display: none;
+}
+.storage-warning.visible { display: block; }
   </style>
 </head>
 <body>
