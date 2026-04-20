@@ -316,9 +316,10 @@ body {
       }
 
       function save(profiles) {
-        if (!isAvailable()) return false;
-        localStorage.setItem(KEY, JSON.stringify(profiles));
-        return true;
+        try {
+          localStorage.setItem(KEY, JSON.stringify(profiles));
+          return true;
+        } catch { return false; }
       }
 
       function add(profile) {
@@ -328,8 +329,12 @@ body {
       }
 
       function update(id, patch) {
-        const profiles = getAll().map(p => p.id === id ? { ...p, ...patch } : p);
-        return save(profiles);
+        const profiles = getAll();
+        const idx = profiles.findIndex(p => p.id === id);
+        if (idx === -1) return null;
+        profiles[idx] = { ...profiles[idx], ...patch };
+        save(profiles);
+        return profiles[idx];
       }
 
       function remove(id) {
@@ -358,7 +363,15 @@ body {
         barcode: document.getElementById('view-barcode')
       };
 
+      Object.entries(views).forEach(([key, el]) => {
+        if (!el) console.error(`[Router] Missing view element: "${key}"`);
+      });
+
       function show(name) {
+        if (!(name in views)) {
+          console.error(`[Router] Unknown view: "${name}"`);
+          return;
+        }
         Object.entries(views).forEach(([key, el]) => {
           el.style.display = key === name ? 'block' : 'none';
         });
