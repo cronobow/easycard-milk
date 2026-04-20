@@ -309,7 +309,54 @@ body {
     <div class="context-menu-item danger" id="ctx-delete">🗑 刪除</div>
   </div>
 
-  <div id="view-form" style="display:none"></div>
+  <div id="view-form" style="display:none">
+  <div class="app-container">
+    <div class="form-back" id="form-back">← 返回</div>
+    <div class="form-title" id="form-title">新增孩子資料</div>
+
+    <div class="field-group">
+      <div class="field-label">孩子姓名</div>
+      <input class="field-input" id="f-name" type="text" placeholder="例：小明" autocomplete="off">
+      <div class="field-error" id="err-name">請填入孩子姓名</div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">卡片類型</div>
+      <div class="type-toggle">
+        <div class="type-btn active" data-type="general" id="type-general">一般悠遊卡</div>
+        <div class="type-btn" data-type="love" id="type-love">兒童優惠卡（愛心卡）</div>
+      </div>
+    </div>
+
+    <div class="love-card-hint" id="love-card-hint">
+      ⚠️ 兒童優惠卡正面無識別碼，請先至官方平台查詢：<br>
+      <a href="https://mepweb.easycard.com.tw/portal/about" target="_blank" rel="noopener">
+        前往悠遊卡多元兌換平台查詢識別碼 →
+      </a><br>
+      （選縣市＋行政區，輸入16碼卡號，即可找到識別碼）
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">識別碼（卡片正面）</div>
+      <input class="field-input" id="f-identifier" type="text" placeholder="例：A12345678" autocomplete="off">
+      <div class="field-error" id="err-identifier">請填入識別碼（愛心卡請至官網查詢）</div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">16碼卡號（卡片背面）</div>
+      <input class="field-input" id="f-card-number" type="text" inputmode="numeric" placeholder="1234 5678 9012 3456" autocomplete="off">
+      <div class="field-error" id="err-card-number">卡號必須為16位數字</div>
+    </div>
+
+    <div class="howto-toggle" id="howto-toggle">📖 如何找到這兩個號碼？</div>
+    <div class="howto-content" id="howto-content">
+      <strong>識別碼</strong>：卡片正面右上角或左下角（幼兒數位卡在左下方）<br>
+      <strong>16碼卡號</strong>：卡片背面中央印刷的數字
+    </div>
+
+    <button class="btn-submit" id="btn-submit-form">儲存並生成條碼</button>
+  </div>
+</div>
   <div id="view-barcode" style="display:none"></div>
 
   <script>
@@ -496,8 +543,99 @@ body {
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    // ===== PROFILE FORM =====
+    const ProfileForm = (() => {
+      let editingId = null;
+      let currentType = 'general';
+
+      function open(profile) {
+        editingId = profile ? profile.id : null;
+        currentType = profile ? profile.type : 'general';
+
+        document.getElementById('form-title').textContent = profile ? '編輯孩子資料' : '新增孩子資料';
+        document.getElementById('f-name').value = profile ? profile.name : '';
+        document.getElementById('f-identifier').value = profile ? profile.identifier : '';
+        document.getElementById('f-card-number').value = profile ? profile.cardNumber : '';
+
+        setType(currentType);
+        clearErrors();
+        Router.show('form');
+      }
+
+      function setType(type) {
+        currentType = type;
+        document.getElementById('type-general').classList.toggle('active', type === 'general');
+        document.getElementById('type-love').classList.toggle('active', type === 'love');
+        document.getElementById('love-card-hint').classList.toggle('visible', type === 'love');
+      }
+
+      function clearErrors() {
+        ['name', 'identifier', 'card-number'].forEach(field => {
+          document.getElementById(`f-${field}`).classList.remove('error');
+          document.getElementById(`err-${field}`).classList.remove('visible');
+        });
+      }
+
+      function showError(field, msg) {
+        const input = document.getElementById(`f-${field}`);
+        const err = document.getElementById(`err-${field}`);
+        input.classList.add('error');
+        if (msg) err.textContent = msg;
+        err.classList.add('visible');
+      }
+
+      function validate() {
+        let valid = true;
+        const name = document.getElementById('f-name').value.trim();
+        const identifier = document.getElementById('f-identifier').value.trim();
+        const cardRaw = document.getElementById('f-card-number').value.replace(/\s/g, '');
+
+        if (!name) { showError('name'); valid = false; }
+        if (!identifier) { showError('identifier'); valid = false; }
+        if (!/^\d{16}$/.test(cardRaw)) { showError('card-number'); valid = false; }
+        return valid;
+      }
+
+      function submit() {
+        if (!validate()) return;
+
+        const name = document.getElementById('f-name').value.trim();
+        const identifier = document.getElementById('f-identifier').value.trim();
+        const cardNumber = document.getElementById('f-card-number').value.replace(/\s/g, '');
+
+        if (editingId) {
+          const updated = Storage.update(editingId, { name, type: currentType, identifier, cardNumber });
+          ProfileList.render();
+          if (updated) BarcodeView.show(updated);
+        } else {
+          const profile = Storage.createProfile(name, currentType, identifier, cardNumber);
+          Storage.add(profile);
+          ProfileList.render();
+          BarcodeView.show(profile);
+        }
+      }
+
+      function init() {
+        document.getElementById('form-back').addEventListener('click', () => {
+          Router.show('list');
+        });
+
+        document.getElementById('type-general').addEventListener('click', () => setType('general'));
+        document.getElementById('type-love').addEventListener('click', () => setType('love'));
+
+        document.getElementById('howto-toggle').addEventListener('click', () => {
+          document.getElementById('howto-content').classList.toggle('visible');
+        });
+
+        document.getElementById('btn-submit-form').addEventListener('click', submit);
+      }
+
+      return { open, init };
+    })();
+
     // ===== INIT =====
     ProfileList.init();
+    ProfileForm.init();
     Router.show('list');
     ProfileList.render();
   </script>
