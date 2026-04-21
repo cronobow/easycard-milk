@@ -230,36 +230,24 @@ body {
   text-align: center;
 }
 .barcode-wrap svg { width: 100%; height: auto; }
-.barcode-numbers {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.barcode-section {
+  margin-bottom: 14px;
 }
-.barcode-field {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f0f4ff;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 12px;
-}
-.barcode-field-label {
-  color: #555;
-  font-size: 10px;
+.barcode-section-label {
+  font-size: 11px;
   font-weight: 600;
+  color: #555;
   text-transform: uppercase;
   letter-spacing: .4px;
-  min-width: 56px;
+  margin-bottom: 6px;
 }
-.barcode-field-value {
-  font-size: 13px;
-  letter-spacing: 1px;
-  color: #1a1a2e;
-  font-weight: 600;
+.barcode-value-text {
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: #444;
+  margin-top: 6px;
+  text-align: center;
   word-break: break-all;
-  text-align: right;
 }
 .barcode-fallback {
   background: #fffbeb;
@@ -392,26 +380,26 @@ body {
     <div class="barcode-back" id="barcode-back">← 返回列表</div>
     <div class="barcode-name" id="barcode-name"></div>
     <div class="barcode-type-label" id="barcode-type-label"></div>
-    <div class="barcode-wrap">
-      <svg id="barcode-svg"></svg>
-      <div class="barcode-numbers">
-        <div class="barcode-field">
-          <span class="barcode-field-label">識別碼</span>
-          <span class="barcode-field-value" id="barcode-identifier"></span>
-        </div>
-        <div class="barcode-field">
-          <span class="barcode-field-label">16碼卡號</span>
-          <span class="barcode-field-value" id="barcode-number"></span>
-        </div>
+    <div class="barcode-section">
+      <div class="barcode-section-label">識別碼 / 學號</div>
+      <div class="barcode-wrap">
+        <svg id="barcode-svg-identifier"></svg>
+        <div class="barcode-value-text" id="barcode-identifier"></div>
       </div>
+      <div id="barcode-error-identifier" style="display:none;color:#e53e3e;text-align:center;font-size:12px;padding:8px">條碼無法生成</div>
+    </div>
+    <div class="barcode-section">
+      <div class="barcode-section-label">16碼卡號</div>
+      <div class="barcode-wrap">
+        <svg id="barcode-svg-cardnumber"></svg>
+        <div class="barcode-value-text" id="barcode-number"></div>
+      </div>
+      <div id="barcode-error-cardnumber" style="display:none;color:#e53e3e;text-align:center;font-size:12px;padding:8px">條碼無法生成</div>
     </div>
     <div class="barcode-fallback" id="barcode-fallback">
       <div class="fallback-title">⚠️ 如掃碼失敗，請店員手動輸入：</div>
       <div class="fallback-row">識別碼：<strong id="fallback-identifier"></strong></div>
       <div class="fallback-row">卡號：<strong id="fallback-card-number"></strong></div>
-    </div>
-    <div id="barcode-error" style="display:none;color:#e53e3e;text-align:center;font-size:13px;padding:16px">
-      條碼無法生成，請確認網路連線後重新整理。
     </div>
     <div class="barcode-screenshot-hint">請截圖保存此頁面</div>
   </div>
@@ -711,28 +699,32 @@ body {
         document.getElementById('barcode-name').textContent = profile.name;
         document.getElementById('barcode-type-label').textContent =
           profile.type === 'general' ? '一般悠遊卡' : '兒童優惠卡（愛心卡）';
-        document.getElementById('barcode-number').textContent = profile.cardNumber;
         document.getElementById('barcode-identifier').textContent = profile.identifier;
+        document.getElementById('barcode-number').textContent = profile.cardNumber;
         document.getElementById('fallback-identifier').textContent = profile.identifier;
         document.getElementById('fallback-card-number').textContent = profile.cardNumber;
 
-        const svg = document.getElementById('barcode-svg');
-        const errEl = document.getElementById('barcode-error');
-
-        try {
-          JsBarcode(svg, profile.cardNumber, {
-            format: 'CODE128',
-            displayValue: false,
-            width: 2,
-            height: 100,
-            margin: 10
-          });
-          svg.style.display = 'block';
-          errEl.style.display = 'none';
-        } catch (e) {
-          svg.style.display = 'none';
-          errEl.style.display = 'block';
+        function renderBarcode(svgId, errId, value) {
+          const svg = document.getElementById(svgId);
+          const errEl = document.getElementById(errId);
+          try {
+            JsBarcode(svg, value, {
+              format: 'CODE128',
+              displayValue: false,
+              width: 2,
+              height: 80,
+              margin: 10
+            });
+            svg.style.display = 'block';
+            errEl.style.display = 'none';
+          } catch (e) {
+            svg.style.display = 'none';
+            errEl.style.display = 'block';
+          }
         }
+
+        renderBarcode('barcode-svg-identifier', 'barcode-error-identifier', profile.identifier);
+        renderBarcode('barcode-svg-cardnumber', 'barcode-error-cardnumber', profile.cardNumber);
 
         Router.show('barcode');
       }
