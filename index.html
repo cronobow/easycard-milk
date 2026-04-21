@@ -703,7 +703,7 @@ body {
         document.getElementById('barcode-identifier').textContent = profile.identifier;
         document.getElementById('barcode-number').textContent = profile.cardNumber;
         document.getElementById('fallback-identifier').textContent = profile.identifier;
-        document.getElementById('fallback-card-number').textContent = profile.cardNumber;
+        document.getElementById('fallback-card-number').textContent = profile.cardNumber.replace(/(\d{4})(?=\d)/g, '$1-');
 
         function renderBarcode(svgId, errId, value, height) {
           const svg = document.getElementById(svgId);
