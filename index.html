@@ -292,6 +292,18 @@ body {
   color: #aaa;
   margin-top: 8px;
 }
+.barcode-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.barcode-card-actions .btn-edit,
+.barcode-card-actions .btn-delete {
+  flex: 1;
+  padding: 10px;
+  font-size: 13px;
+  border-radius: 8px;
+}
 
 /* === Context Menu (long press) === */
 .context-menu {
@@ -428,6 +440,10 @@ body {
       <div class="fallback-row">卡號：<strong id="fallback-card-number"></strong></div>
     </div>
     <div class="barcode-screenshot-hint">請截圖保存此頁面</div>
+    <div class="barcode-card-actions">
+      <button class="btn-edit" id="barcode-btn-edit">✏️ 編輯資料</button>
+      <button class="btn-delete" id="barcode-btn-delete">🗑 刪除</button>
+    </div>
   </div>
 </div>
 
@@ -539,63 +555,27 @@ body {
         }
 
         container.innerHTML = profiles.map(p => `
-          <div class="profile-card" data-id="${escapeHtml(p.id)}">
+          <div class="profile-card" data-id="${escapeHtml(p.id)}" style="cursor:pointer">
             <div class="profile-info">
               <div class="profile-name">${escapeHtml(p.name)}</div>
               <div class="profile-type">${p.type === 'general' ? '一般悠遊卡' : '兒童優惠卡（愛心卡）'}</div>
             </div>
-            <div class="card-actions">
-              <button class="btn-barcode" data-id="${escapeHtml(p.id)}">條碼</button>
-              <button class="btn-edit" data-id="${escapeHtml(p.id)}">✏️</button>
-              <button class="btn-delete" data-id="${escapeHtml(p.id)}">🗑</button>
-            </div>
+            <button class="btn-barcode" data-id="${escapeHtml(p.id)}">顯示條碼</button>
           </div>`).join('');
 
-        // Barcode buttons
+        // Card click (entire card) and barcode button both show barcode
+        container.querySelectorAll('.profile-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const profile = Storage.getAll().find(p => p.id === card.dataset.id);
+            if (profile) BarcodeView.show(profile);
+          });
+        });
+
         container.querySelectorAll('.btn-barcode').forEach(btn => {
           btn.addEventListener('click', e => {
             e.stopPropagation();
             const profile = Storage.getAll().find(p => p.id === btn.dataset.id);
             if (profile) BarcodeView.show(profile);
-          });
-        });
-
-        // Edit buttons
-        container.querySelectorAll('.btn-edit').forEach(btn => {
-          btn.addEventListener('click', e => {
-            e.stopPropagation();
-            const profile = Storage.getAll().find(p => p.id === btn.dataset.id);
-            if (profile) ProfileForm.open(profile);
-          });
-        });
-
-        // Delete buttons
-        container.querySelectorAll('.btn-delete').forEach(btn => {
-          btn.addEventListener('click', e => {
-            e.stopPropagation();
-            const profile = Storage.getAll().find(p => p.id === btn.dataset.id);
-            if (profile && confirm(`確定要刪除「${profile.name}」的資料？`)) {
-              Storage.remove(btn.dataset.id);
-              render();
-            }
-          });
-        });
-
-        // Long press for edit/delete
-        container.querySelectorAll('.profile-card').forEach(card => {
-          let startX, startY;
-          card.addEventListener('pointerdown', (e) => {
-            startX = e.clientX;
-            startY = e.clientY;
-            clearTimeout(longPressTimer);
-            longPressTimer = setTimeout(() => showContextMenu(card.dataset.id, card), 600);
-          });
-          card.addEventListener('pointerup', () => clearTimeout(longPressTimer));
-          card.addEventListener('pointercancel', () => clearTimeout(longPressTimer));
-          card.addEventListener('pointermove', (e) => {
-            if (Math.hypot(e.clientX - startX, e.clientY - startY) > 8) {
-              clearTimeout(longPressTimer);
-            }
           });
         });
       }
@@ -746,7 +726,10 @@ body {
 
     // ===== BARCODE VIEW =====
     const BarcodeView = (() => {
+      let currentProfile = null;
+
       function show(profile) {
+        currentProfile = profile;
         document.getElementById('barcode-name').textContent = profile.name;
         document.getElementById('barcode-type-label').textContent =
           profile.type === 'general' ? '一般悠遊卡' : '兒童優惠卡（愛心卡）';
@@ -783,6 +766,20 @@ body {
       function init() {
         document.getElementById('barcode-back').addEventListener('click', () => {
           Router.show('list');
+        });
+
+        document.getElementById('barcode-btn-edit').addEventListener('click', () => {
+          if (currentProfile) ProfileForm.open(currentProfile);
+        });
+
+        document.getElementById('barcode-btn-delete').addEventListener('click', () => {
+          if (!currentProfile) return;
+          if (confirm(`確定要刪除「${currentProfile.name}」的資料？`)) {
+            Storage.remove(currentProfile.id);
+            currentProfile = null;
+            ProfileList.render();
+            Router.show('list');
+          }
         });
       }
 
