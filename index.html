@@ -510,13 +510,20 @@ body {
 
         // Long press for edit/delete
         container.querySelectorAll('.profile-card').forEach(card => {
-          card.addEventListener('pointerdown', () => {
+          let startX, startY;
+          card.addEventListener('pointerdown', (e) => {
+            startX = e.clientX;
+            startY = e.clientY;
             clearTimeout(longPressTimer);
             longPressTimer = setTimeout(() => showContextMenu(card.dataset.id, card), 600);
           });
           card.addEventListener('pointerup', () => clearTimeout(longPressTimer));
           card.addEventListener('pointercancel', () => clearTimeout(longPressTimer));
-          card.addEventListener('pointermove', () => clearTimeout(longPressTimer));
+          card.addEventListener('pointermove', (e) => {
+            if (Math.hypot(e.clientX - startX, e.clientY - startY) > 8) {
+              clearTimeout(longPressTimer);
+            }
+          });
         });
       }
 
@@ -525,8 +532,13 @@ body {
         const menu = document.getElementById('context-menu');
         const overlay = document.getElementById('context-overlay');
         const rect = card.getBoundingClientRect();
-        menu.style.top = `${rect.bottom + 4}px`;
-        menu.style.left = `${rect.left}px`;
+        const menuWidth = 160;
+        const menuHeight = 96;
+        const top = rect.bottom + window.scrollY + 4;
+        const left = Math.min(rect.left, window.innerWidth - menuWidth - 8);
+        const maxTop = window.scrollY + window.innerHeight - menuHeight - 8;
+        menu.style.top = `${Math.min(top, maxTop)}px`;
+        menu.style.left = `${Math.max(8, left)}px`;
         menu.classList.add('visible');
         overlay.classList.add('visible');
       }
@@ -551,9 +563,10 @@ body {
         });
 
         document.getElementById('ctx-delete').addEventListener('click', () => {
-          if (contextTargetId && confirm('確定要刪除這筆資料？')) {
-            Storage.remove(contextTargetId);
-            hideContextMenu();
+          const idToDelete = contextTargetId;
+          hideContextMenu();
+          if (idToDelete && confirm('確定要刪除這筆資料？')) {
+            Storage.remove(idToDelete);
             render();
           }
         });
@@ -583,6 +596,7 @@ body {
 
         setType(currentType);
         clearErrors();
+        document.getElementById('howto-content').classList.remove('visible');
         Router.show('form');
       }
 
