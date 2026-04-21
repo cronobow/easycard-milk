@@ -72,6 +72,31 @@ body {
   white-space: nowrap;
 }
 .btn-barcode:active { background: #1344b0; }
+.card-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.btn-edit {
+  background: transparent;
+  border: 1.5px solid #d0d9f0;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #555;
+}
+.btn-edit:active { background: #f0f4ff; }
+.btn-delete {
+  background: transparent;
+  border: 1.5px solid #fca5a5;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #e53e3e;
+}
+.btn-delete:active { background: #fef2f2; }
 
 /* === Add Button === */
 .btn-add {
@@ -519,7 +544,11 @@ body {
               <div class="profile-name">${escapeHtml(p.name)}</div>
               <div class="profile-type">${p.type === 'general' ? '一般悠遊卡' : '兒童優惠卡（愛心卡）'}</div>
             </div>
-            <button class="btn-barcode" data-id="${escapeHtml(p.id)}">顯示條碼</button>
+            <div class="card-actions">
+              <button class="btn-barcode" data-id="${escapeHtml(p.id)}">條碼</button>
+              <button class="btn-edit" data-id="${escapeHtml(p.id)}">✏️</button>
+              <button class="btn-delete" data-id="${escapeHtml(p.id)}">🗑</button>
+            </div>
           </div>`).join('');
 
         // Barcode buttons
@@ -528,6 +557,27 @@ body {
             e.stopPropagation();
             const profile = Storage.getAll().find(p => p.id === btn.dataset.id);
             if (profile) BarcodeView.show(profile);
+          });
+        });
+
+        // Edit buttons
+        container.querySelectorAll('.btn-edit').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const profile = Storage.getAll().find(p => p.id === btn.dataset.id);
+            if (profile) ProfileForm.open(profile);
+          });
+        });
+
+        // Delete buttons
+        container.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const profile = Storage.getAll().find(p => p.id === btn.dataset.id);
+            if (profile && confirm(`確定要刪除「${profile.name}」的資料？`)) {
+              Storage.remove(btn.dataset.id);
+              render();
+            }
           });
         });
 
