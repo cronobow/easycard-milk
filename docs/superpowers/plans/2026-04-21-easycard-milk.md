@@ -2,9 +2,17 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 建立單一 `index.html` 靜態網頁，讓家長輸入悠遊卡識別碼與16碼卡號後生成一維條碼，支援多筆幼兒資料儲存於 localStorage，部署至 GitHub Pages。
+**Goal:** 建立單一 `index.html` 靜態網頁，讓家長輸入悠遊卡識別碼／學號與16碼卡號後生成兩組一維條碼，支援多筆悠遊卡暱稱資料儲存於 localStorage，部署至 GitHub Pages。
 
 **Architecture:** 單一 `index.html`，純 Vanilla JS + 內嵌 CSS。三個 view（列表、表單、條碼）以 `display:none/block` 切換，無頁面跳轉。JS 分為四個邏輯段：Storage（localStorage CRUD）、Router（view 切換）、ProfileList（列表渲染）、BarcodeView（條碼生成）。
+
+**實作後變更摘要（2026-04-21）：**
+- 欄位名稱：「悠遊卡暱稱」、「識別碼/學號」、「16碼卡號（卡片背面）」
+- 移除卡片類型切換；兒童優惠卡查詢提示改為永遠顯示於說明區塊下方，文字：「若卡片正面無標示識別碼/學號，可至官方平台查詢」
+- 條碼頁顯示兩組獨立條碼：識別碼（較小）+ 卡號（較大）
+- 16碼卡號輸入時自動每4碼插入空格，儲存時去除
+- 字體：標題 ≥16px，內文 ≥14px
+- 刪除／編輯功能移至條碼頁；列表頁整張卡片可點擊
 
 **Tech Stack:** HTML5, CSS3, Vanilla JS (ES6+), JsBarcode 3.x (CDN), crypto.randomUUID()
 
@@ -694,7 +702,7 @@ git commit -m "feat: add profile list view with long-press context menu"
     </div>
 
     <div class="field-group">
-      <div class="field-label">識別碼（卡片正面）</div>
+      <div class="field-label">識別碼/學號</div>
       <input class="field-input" id="f-identifier" type="text" placeholder="例：A12345678" autocomplete="off">
       <div class="field-error" id="err-identifier">請填入識別碼（愛心卡請至官網查詢）</div>
     </div>
@@ -708,7 +716,7 @@ git commit -m "feat: add profile list view with long-press context menu"
     <div class="howto-toggle" id="howto-toggle">📖 如何找到這兩個號碼？</div>
     <div class="howto-content" id="howto-content">
       <strong>識別碼</strong>：卡片正面右上角或左下角（幼兒數位卡在左下方）<br>
-      <strong>16碼卡號</strong>：卡片背面中央印刷的數字
+      <strong>16碼卡號</strong>：卡片背面右下方印刷的16碼數字
     </div>
 
     <button class="btn-submit" id="btn-submit-form">儲存並生成條碼</button>
