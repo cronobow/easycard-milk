@@ -2,7 +2,7 @@
 
 台北市／新北市「生生喝鮮乳」政策輔助工具。忘記帶悠遊卡時，輸入識別碼/學號與16碼卡號，立即生成超商可掃描的 Code 128 一維條碼。
 
-**網址：** [https://gh.maxlab.tw](https://gh.maxlab.tw)
+**網址：** [https://gh.maxlab.tw/easycard-milk](https://gh.maxlab.tw/easycard-milk)
 
 ---
 
@@ -55,7 +55,7 @@ git push origin main
 
 GitHub Pages 設定：Settings → Pages → Source: `main` / `(root)`
 
-自訂網域：於 DNS 新增 `CNAME gh → cronobow.github.io`
+自訂網域：在 User Pages repo（`cronobow.github.io`）設定 CNAME `gh.maxlab.tw`，本 repo 即自動掛載於 `gh.maxlab.tw/easycard-milk`
 
 ## License
 
