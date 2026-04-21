@@ -229,7 +229,7 @@ body {
   box-shadow: 0 1px 6px rgba(0,0,0,.08);
   text-align: center;
 }
-.barcode-wrap svg { width: 100%; height: auto; }
+.barcode-wrap svg { width: 80%; max-width: 280px; height: auto; display: block; margin: 0 auto; }
 .barcode-section {
   margin-bottom: 14px;
 }
@@ -242,7 +242,7 @@ body {
   margin-bottom: 6px;
 }
 .barcode-value-text {
-  font-size: 12px;
+  font-size: 16px;
   letter-spacing: 1.5px;
   color: #444;
   margin-top: 6px;
@@ -723,8 +723,8 @@ body {
           }
         }
 
-        renderBarcode('barcode-svg-identifier', 'barcode-error-identifier', profile.identifier, 40);
-        renderBarcode('barcode-svg-cardnumber', 'barcode-error-cardnumber', profile.cardNumber, 80);
+        renderBarcode('barcode-svg-identifier', 'barcode-error-identifier', profile.identifier, 30);
+        renderBarcode('barcode-svg-cardnumber', 'barcode-error-cardnumber', profile.cardNumber, 60);
 
         Router.show('barcode');
       }
