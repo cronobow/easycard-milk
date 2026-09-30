@@ -232,12 +232,32 @@ body {
   cursor: pointer;
   margin-bottom: 16px;
 }
+.barcode-navigation {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.barcode-heading { flex: 1; min-width: 0; }
+.barcode-position { text-align: center; font-size: 14px; color: #555; }
+.barcode-arrow {
+  flex: 0 0 44px;
+  min-height: 44px;
+  border: 1px solid #aac0f0;
+  border-radius: 8px;
+  background: white;
+  color: #1a56db;
+  font-size: 24px;
+  cursor: pointer;
+}
+.barcode-arrow:disabled { opacity: .35; cursor: default; }
 .barcode-name {
   font-size: 22px;
   font-weight: bold;
   color: #1a56db;
   text-align: center;
   margin-bottom: 4px;
+  overflow-wrap: anywhere;
 }
 .barcode-type-label {
   text-align: center;
@@ -407,7 +427,14 @@ body {
   <div id="view-barcode" style="display:none">
   <div class="app-container">
     <div class="barcode-back" id="barcode-back">← 返回列表</div>
-    <div class="barcode-name" id="barcode-name"></div>
+    <div class="barcode-navigation">
+      <button class="barcode-arrow" id="barcode-prev" aria-label="上一張卡" type="button">‹</button>
+      <div class="barcode-heading" aria-live="polite">
+        <div class="barcode-name" id="barcode-name"></div>
+        <div class="barcode-position" id="barcode-position"></div>
+      </div>
+      <button class="barcode-arrow" id="barcode-next" aria-label="下一張卡" type="button">›</button>
+    </div>
     <div class="barcode-section">
       <div class="barcode-section-label">16碼卡號</div>
       <div class="barcode-wrap">
@@ -718,6 +745,12 @@ body {
 
       function show(profile) {
         currentProfile = profile;
+        const profiles = Storage.getAll();
+        const index = profiles.findIndex(p => p.id === profile.id);
+        const canSwitch = profiles.length > 1 && index !== -1;
+        document.getElementById('barcode-prev').disabled = !canSwitch;
+        document.getElementById('barcode-next').disabled = !canSwitch;
+        document.getElementById('barcode-position').textContent = index === -1 ? '' : `${index + 1} / ${profiles.length}`;
         document.getElementById('barcode-name').textContent = profile.name;
         document.getElementById('barcode-identifier').textContent = profile.identifier;
         document.getElementById('barcode-number').textContent = profile.cardNumber;
@@ -749,7 +782,17 @@ body {
         Router.show('barcode');
       }
 
+      function switchCard(direction) {
+        if (!currentProfile) return;
+        const profiles = Storage.getAll();
+        const index = profiles.findIndex(p => p.id === currentProfile.id);
+        if (profiles.length < 2 || index === -1) return;
+        show(profiles[(index + direction + profiles.length) % profiles.length]);
+      }
+
       function init() {
+        document.getElementById('barcode-prev').addEventListener('click', () => switchCard(-1));
+        document.getElementById('barcode-next').addEventListener('click', () => switchCard(1));
         document.getElementById('barcode-back').addEventListener('click', () => {
           Router.show('list');
         });
@@ -778,6 +821,8 @@ body {
     BarcodeView.init();
     Router.show('list');
     ProfileList.render();
+    const firstProfile = Storage.getAll()[0];
+    if (firstProfile) BarcodeView.show(firstProfile);
   </script>
 </body>
 </html>
