@@ -376,15 +376,15 @@ body {
     </div>
 
     <div class="field-group">
-      <div class="field-label">識別碼/學號</div>
-      <input class="field-input" id="f-identifier" type="text" placeholder="例：A12345678" autocomplete="off">
-      <div class="field-error" id="err-identifier">請填入識別碼（愛心卡請至官網查詢）</div>
-    </div>
-
-    <div class="field-group">
       <div class="field-label">外觀卡號（卡片背面）</div>
       <input class="field-input" id="f-card-number" type="text" inputmode="numeric" placeholder="1234 5678 9012 3456" autocomplete="off">
       <div class="field-error" id="err-card-number">請填入純數字卡號</div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">識別碼/學號</div>
+      <input class="field-input" id="f-identifier" type="text" placeholder="例：A12345678" autocomplete="off">
+      <div class="field-error" id="err-identifier">請填入識別碼（愛心卡請至官網查詢）</div>
     </div>
 
     <div class="howto-toggle" id="howto-toggle">📖 如何找到這兩個號碼？</div>
@@ -409,14 +409,6 @@ body {
     <div class="barcode-back" id="barcode-back">← 返回列表</div>
     <div class="barcode-name" id="barcode-name"></div>
     <div class="barcode-section">
-      <div class="barcode-section-label">識別碼 / 學號</div>
-      <div class="barcode-wrap">
-        <svg id="barcode-svg-identifier"></svg>
-        <div class="barcode-value-text" id="barcode-identifier"></div>
-      </div>
-      <div id="barcode-error-identifier" style="display:none;color:#e53e3e;text-align:center;font-size:12px;padding:8px">條碼無法生成</div>
-    </div>
-    <div class="barcode-section">
       <div class="barcode-section-label">16碼卡號</div>
       <div class="barcode-wrap">
         <svg id="barcode-svg-cardnumber"></svg>
@@ -424,10 +416,18 @@ body {
       </div>
       <div id="barcode-error-cardnumber" style="display:none;color:#e53e3e;text-align:center;font-size:12px;padding:8px">條碼無法生成</div>
     </div>
+    <div class="barcode-section">
+      <div class="barcode-section-label">識別碼 / 學號</div>
+      <div class="barcode-wrap">
+        <svg id="barcode-svg-identifier"></svg>
+        <div class="barcode-value-text" id="barcode-identifier"></div>
+      </div>
+      <div id="barcode-error-identifier" style="display:none;color:#e53e3e;text-align:center;font-size:12px;padding:8px">條碼無法生成</div>
+    </div>
     <div class="barcode-fallback" id="barcode-fallback">
       <div class="fallback-title">⚠️ 如掃碼失敗，請店員手動輸入：</div>
-      <div class="fallback-row">識別碼/學號：<strong id="fallback-identifier"></strong></div>
       <div class="fallback-row">卡號：<strong id="fallback-card-number"></strong></div>
+      <div class="fallback-row">識別碼/學號：<strong id="fallback-identifier"></strong></div>
     </div>
     <div class="barcode-screenshot-hint">請截圖保存此頁面</div>
     <div class="barcode-card-actions">
