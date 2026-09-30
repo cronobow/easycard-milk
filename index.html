@@ -277,7 +277,7 @@ body {
   text-align: center;
 }
 .barcode-wrap svg { width: 80%; max-width: 280px; height: auto; display: block; margin: 0 auto; }
-#barcode-svg-identifier { width: 64%; max-width: 224px; }
+#barcode-svg-identifier { width: 64%; max-width: 224px; height: 80px; }
 .barcode-section {
   margin-bottom: 14px;
 }
@@ -431,7 +431,7 @@ body {
     <div class="barcode-section">
       <div class="barcode-section-label">識別碼 / 學號</div>
       <div class="barcode-wrap">
-        <svg id="barcode-svg-identifier"></svg>
+        <svg id="barcode-svg-identifier" preserveAspectRatio="none"></svg>
         <div class="barcode-value-text" id="barcode-identifier"></div>
       </div>
       <div id="barcode-error-identifier" style="display:none;color:#e53e3e;text-align:center;font-size:12px;padding:8px">條碼無法生成</div>
